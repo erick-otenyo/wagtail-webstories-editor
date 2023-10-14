@@ -1,0 +1,113 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailadmin_tags i18n static %}
+{% block titletag %}{% blocktrans trimmed with snippet_type_name=model_opts.verbose_name %}Editing
+    {{ snippet_type_name }} - {{ object }}{% endblocktrans %}{% endblock %}
+{% block bodyclass %}webstory-editor {% if locked_for_user %}content-locked{% endif %}{% endblock %}
+{% block content %}
+
+    <div style="display: flex;flex-direction: column;height: 100%">
+        <div class="w-sticky w-top-0 w-z-header">
+            {% include 'wagtailsnippets/snippets/headers/edit_header.html' %}
+            {% include "wagtail_webstories_editor/edit_side_panels.html" %}
+        </div>
+        <div id="webstory-editor-container" style="flex: 1;height: 100%"></div>
+    </div>
+    <form id="webstory-form" action="{{ action_url }}" method="POST" novalidate{% if form.is_multipart %}
+          enctype="multipart/form-data"{% endif %} data-edit-form>
+        {% csrf_token %}
+        <div style="display: none">
+            {{ panel.render_form_content }}
+        </div>
+        <footer class="footer">
+            <nav aria-label="{% trans 'Actions' %}">
+                <ul>
+                    <li class="actions actions--primary footer__container">
+                        <div class="dropdown dropup dropdown-button match-width {% if view.view_name == 'revisions_revert' %}warning{% endif %}">
+                            {{ action_menu.render_html }}
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </footer>
+    </form>
+
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    {{ media.css }}
+
+    <style>
+        .webstory-editor .content-wrapper .content {
+            height: 100%;
+            padding: 0 !important;
+        }
+
+        .webstory-editor .footer .actions {
+            width: 250px !important;
+        }
+
+    </style>
+
+
+{% endblock %}
+{% block extra_js %}
+    {{ block.super }}
+    {% include "wagtailadmin/pages/_editor_js.html" %}
+    {{ media.js }}
+    <script src="{% static 'wagtail_webstories_editor/js/editor.js' %}"></script>
+
+    <script>
+        // Set wagtailConfig.ACTIVE_CONTENT_LOCALE if this is a translated page
+        // This value may be used by JS widgets on the form
+        {% if locale %}
+            window.wagtailConfig = window.wagtailConfig || {};
+            window.wagtailConfig.ACTIVE_CONTENT_LOCALE = '{{ locale.language_code|escapejs }}';
+        {% endif %}
+    </script>
+
+    <script>
+
+        const serviceWorkerScriptUrl = "{% static 'wagtail_webstories_editor/js/sw.js' %}";
+        const elementId = "webstory-editor-container"
+
+        const storyConfig = {{ object.json_config|safe }};
+        const storyHtml = "{{ object.html|escapejs }}";
+
+        storyConfig.storyId = "{{ object.pk }}"
+
+        const story = {
+            ...storyConfig,
+            content: storyHtml
+        }
+
+        const options = {
+            serviceWorkerScriptUrl: serviceWorkerScriptUrl,
+            saveStoryById: (story) => {
+                const storyData = WebStories.getStorySaveData(story)
+
+                const {content, ...rest} = storyData
+                const {title: {raw: storyTitle}} = rest
+
+                $("#id_title").val(storyTitle)
+
+                $("#id_config").val(JSON.stringify(rest))
+                $("#id_html").val(content)
+
+            },
+            initialEdits: {story},
+            storyId: "{{ object.pk }}"
+        }
+
+        $(document).ready(() => {
+            // initialize web story
+            WebStories.initEditor(elementId, options)
+        })
+
+
+    </script>
+
+    {% if workflow_enabled %}
+        {% include "wagtailadmin/shared/_workflow_init.html" %}
+    {% endif %}
+{% endblock %}

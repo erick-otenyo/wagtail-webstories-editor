@@ -1,0 +1,6 @@
+include LICENSE README.md
+recursive-include wagtail_webstories_editor *.html
+recursive-include wagtail_webstories_editor *.py
+recursive-include wagtail_webstories_editor/static *
+recursive-include wagtail_webstories_editor/templates *
+recursive-include wagtail_webstories_editor/locale *.po *.mo
