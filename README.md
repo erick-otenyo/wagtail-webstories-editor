@@ -2,4 +2,4 @@
 
 Integrate Google Web Stories Editor in Wagtail Projects
 
-# Features
+## NOTE: Under development
