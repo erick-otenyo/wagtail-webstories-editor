@@ -8,7 +8,7 @@ function UpdateHandler() {
 
     const {saveStory} = useStory(({actions: {saveStory},}) => ({saveStory,}));
 
-
+    // trigger save story each time we have new changes
     useEffect(() => {
         if (!hasNewChanges) {
             return undefined;

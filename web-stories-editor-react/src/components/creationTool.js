@@ -25,7 +25,7 @@ import {v4 as uuidv4} from "uuid";
 /**
  * Internal dependencies
  */
-import {getFonts,} from "../api/editor";
+import {getFonts} from "../api/editor";
 import Layout from "./layout";
 import MediaUpload from "./MediaUpload";
 import UpdateHandler from "./updateHandler";
@@ -38,23 +38,21 @@ const CreationTool = (props) => {
     } = props
 
     const {
-        getMedia,
-        saveStoryById,
+        apiCallbacks = {},
         ...rest
     } = editorConfig || {}
 
     const config = useMemo(() => {
         return {
+            ...rest,
             storyId: storyId ? storyId : uuidv4(),
             capabilities: {
                 hasUploadMediaAction: true,
             },
             apiCallbacks: {
+                ...apiCallbacks,
                 updateCurrentUser: () => Promise.resolve({}),
                 getFonts,
-                saveStoryById,
-                getMedia,
-                ...rest
             },
             MediaUpload,
         };

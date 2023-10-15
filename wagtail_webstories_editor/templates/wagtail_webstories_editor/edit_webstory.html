@@ -51,6 +51,30 @@
             z-index: 9999 !important;
         }
 
+
+        .webstory-editor input {
+            background-color: transparent;
+        }
+
+        .webstory-editor input[type=search], .webstory-editor input[type=url] {
+            height: 100%;
+            width: 100%;
+            background-color: transparent;
+            outline: none;
+            cursor: pointer;
+            font-family: "Google Sans", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0;
+            line-height: 20px;
+            text-decoration: none;
+            color: rgb(228, 229, 230);
+            border: 1px solid rgb(57, 61, 63);
+            padding: 8px 20px 8px 40px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
     </style>
 
 
@@ -130,25 +154,29 @@
             };
         };
 
+        const onSaveStory = (story) => {
+            const storyData = WebStories.getStorySaveData(story)
+            const {content, ...rest} = storyData
+            const {title: {raw: storyTitle}} = rest
+
+            if (storyTitle) {
+                $("#id_title").val(storyTitle)
+            } else {
+                rest.title.raw = $("#id_title").val()
+            }
+
+            $("#id_config").val(JSON.stringify(rest))
+            $("#id_html").val(content)
+
+        }
 
         const editorConfig = {
-            saveStoryById: (story) => {
-                const storyData = WebStories.getStorySaveData(story)
-                const {content, ...rest} = storyData
-                const {title: {raw: storyTitle}} = rest
-
-
-                if (storyTitle) {
-                    $("#id_title").val(storyTitle)
-                } else {
-                    rest.title.raw = $("#id_title").val()
-                }
-
-
-                $("#id_config").val(JSON.stringify(rest))
-                $("#id_html").val(content)
+            apiCallbacks: {
+                saveStoryById: (story) => {
+                    onSaveStory(story)
+                },
+                getMedia: getMedia,
             },
-            getMedia: getMedia,
             allowedMimeTypes: {
                 image: [
                     'image/webp',
@@ -178,9 +206,7 @@
             WebStories.initializeStoryEditor(elementId, editorConfig, initialEdits, options)
         })
 
-
     </script>
-
     {% if workflow_enabled %}
         {% include "wagtailadmin/shared/_workflow_init.html" %}
     {% endif %}
