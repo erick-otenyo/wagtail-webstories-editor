@@ -25,54 +25,41 @@ import {DATA_VERSION} from '@googleforcreators/migration';
  */
 import registerServiceWorker from './serviceWorkerRegistration';
 import CreationTool from './components/creationTool';
-import {StoryStatusProvider, useStoryStatus} from './app/storyStatus';
-import useIndexedDBMedia from './app/IndexedDBMedia/useIndexedDBMedia';
 
 
-const AppContainer = styled.div`
+const EditorContainer = styled.div`
   height:100%
 `;
 
 const Editor = (props) => {
     return (
-        <AppContainer>
+        <EditorContainer>
             <CreationTool {...props} />
-        </AppContainer>
+        </EditorContainer>
     );
 };
 
-const App = (props) => {
-    useIndexedDBMedia();
-    const {isInitializingIndexDB, isRefreshingMedia} = useStoryStatus(
-        ({state}) => ({
-            isInitializingIndexDB: state.isInitializingIndexDB,
-            isRefreshingMedia: state.isRefreshingMedia,
-        })
-    );
-    return !isInitializingIndexDB && !isRefreshingMedia ? (
-        <Editor {...props}/>
-    ) : (
-        <p>{'Please wait'}</p>
-    );
-};
-
-export function initEditor(elementId, options = {}) {
+export function initializeStoryEditor(elementId, editorConfig, initialEdits, options) {
+    const {serviceWorkerScriptUrl, storyId} = options
 
     // register service worker
     registerServiceWorker(serviceWorkerScriptUrl);
 
+    const props = {
+        editorConfig,
+        initialEdits,
+        storyId
+    }
+
     // render
     render(
-        <StoryStatusProvider>
-            <App {...options}/>
-        </StoryStatusProvider>,
-        document.getElementById(elementId)
+        <Editor {...props}/>,
+        document.getElementById(elementId
+        )
     );
 }
 
-const defaultPermalinkTemplate = 'https://example.org/web-stories/%pagename%/'
-
-export function getStorySaveData(story, permalinkTemplate = defaultPermalinkTemplate) {
+export function getStorySaveData(story) {
     const {
         pages,
         fonts,
@@ -108,7 +95,9 @@ export function getStorySaveData(story, permalinkTemplate = defaultPermalinkTemp
         },
         stylePresets: globalStoryStyles,
         content: content,
-        capabilities: {},
+        capabilities: {
+            hasUploadMediaAction: true,
+        },
         featuredMedia: {
             id: 0,
             height: 0,
@@ -121,7 +110,6 @@ export function getStorySaveData(story, permalinkTemplate = defaultPermalinkTemp
             id: 1,
             name: '',
         },
-        permalinkTemplate: permalinkTemplate,
         ...rest
     };
 }

@@ -23,9 +23,7 @@ import {InterfaceSkeleton} from '@googleforcreators/story-editor';
  * Internal dependencies
  */
 import {Header} from '../header';
-import useUpdateStoryAssets from '../../app/IndexedDBMedia/useUpdateStoryAssets';
 
 export default function Layout() {
-    useUpdateStoryAssets();
     return <InterfaceSkeleton header={<Header/>}/>;
 }

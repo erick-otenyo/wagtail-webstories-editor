@@ -45,13 +45,13 @@ module.exports = function (env, argv) {
                     test: /\.(svg|png)$/,
                     use: {
                         loader: "url-loader",
-                        options: {},
+                           options: {},
                     },
                 },
             ],
         },
         output: {
-            path: path.join(__dirname, "../wagtail_webstories_editor/static/wagtail_webstories_editor/js/"),
+            path: path.join(__dirname, "../wagtail_webstories_editor/static/wagtail_webstories_editor/js/story-editor"),
             filename: "[name].js",
             library: "WebStories",
             libraryTarget: "umd",
@@ -66,6 +66,10 @@ module.exports = function (env, argv) {
                 swSrc: "./src/src-sw.js",
                 swDest: "sw.js",
             }),
+            new webpack.optimize.LimitChunkCountPlugin({
+                maxChunks: 5,
+            })
         ],
-    };
+    }
+        ;
 };

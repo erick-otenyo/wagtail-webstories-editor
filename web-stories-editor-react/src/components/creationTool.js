@@ -32,15 +32,16 @@ import UpdateHandler from "./updateHandler";
 
 const CreationTool = (props) => {
     const {
-        onStoryUpdate,
+        editorConfig,
         initialEdits,
         storyId,
+    } = props
+
+    const {
         getMedia,
         saveStoryById,
-        updateMedia,
-        uploadMedia,
-        deleteMedia
-    } = props
+        ...rest
+    } = editorConfig || {}
 
     const config = useMemo(() => {
         return {
@@ -53,9 +54,7 @@ const CreationTool = (props) => {
                 getFonts,
                 saveStoryById,
                 getMedia,
-                uploadMedia,
-                updateMedia,
-                deleteMedia,
+                ...rest
             },
             MediaUpload,
         };
@@ -68,7 +67,7 @@ const CreationTool = (props) => {
     return (
         <StoryEditor config={config} initialEdits={{story}}>
             <Layout/>
-            <UpdateHandler onStoryUpdate={onStoryUpdate}/>
+            <UpdateHandler/>
         </StoryEditor>
     );
 };

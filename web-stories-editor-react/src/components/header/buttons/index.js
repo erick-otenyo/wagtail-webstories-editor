@@ -18,14 +18,11 @@
  * External dependencies
  */
 import styled from 'styled-components';
-import {CircularProgress} from '@googleforcreators/design-system';
 
 /**
  * Internal dependencies
  */
-import {useStoryStatus} from '../../../app/storyStatus';
 import Preview from './preview';
-import Reset from './reset';
 import MobileButtons from './mobileButtons';
 
 const Wrapper = styled.div`
@@ -36,6 +33,7 @@ const Wrapper = styled.div`
     display: none;
   }
 `;
+
 const ButtonList = styled.nav`
   display: flex;
   justify-content: flex-end;
@@ -61,28 +59,14 @@ const IconWithSpinner = styled.div`
   position: relative;
 `;
 
-function Loading() {
-    return (
-        <Spinner>
-            <CircularProgress size={32}/>
-        </Spinner>
-    );
-}
-
 function Buttons() {
-    const {
-        state: {isSaving},
-    } = useStoryStatus(({state}) => ({state}));
-
     return (
         <ButtonList>
             <List>
-                <Reset/>
                 <Wrapper>
                     <Space/>
                     <IconWithSpinner>
                         <Preview/>
-                        {(isSaving) && <Loading/>}
                     </IconWithSpinner>
                 </Wrapper>
                 <MobileButtons/>

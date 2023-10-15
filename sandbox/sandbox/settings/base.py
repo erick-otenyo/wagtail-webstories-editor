@@ -27,7 +27,13 @@ INSTALLED_APPS = [
     "search",
 
     "wagtail_webstories_editor",
+
+    "wagtail.api.v2",
+
     "wagtailmedia",
+    "django_filters",
+
+    "rest_framework",
 
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -53,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -162,3 +169,5 @@ WAGTAILSEARCH_BACKENDS = {
 # Base URL to use when referring to full URLs within the Wagtail admin backend -
 # e.g. in notification emails. Don't include '/admin' or a trailing slash
 WAGTAILADMIN_BASE_URL = "http://example.com"
+
+CORS_ALLOW_ALL_ORIGINS = True

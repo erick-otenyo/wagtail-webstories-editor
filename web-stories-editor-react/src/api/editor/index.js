@@ -14,6 +14,4 @@
  * limitations under the License.
  */
 
-export * from './story';
 export * from './fonts';
-export * from './media';

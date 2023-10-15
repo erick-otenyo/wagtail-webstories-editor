@@ -47,6 +47,10 @@
             width: 250px !important;
         }
 
+        div[class^='constants__PopupContainer'] {
+            z-index: 9999 !important;
+        }
+
     </style>
 
 
@@ -55,7 +59,21 @@
     {{ block.super }}
     {% include "wagtailadmin/pages/_editor_js.html" %}
     {{ media.js }}
-    <script src="{% static 'wagtail_webstories_editor/js/editor.js' %}"></script>
+
+    <script src="{% static 'wagtailimages/js/image-chooser-modal.js' %}"></script>
+    <script src="{% static 'wagtailimages/js/image-chooser.js' %}"></script>
+
+    <script src="{% static 'wagtaildocs/js/document-chooser-modal.js' %}"></script>
+    <script src="{% static 'wagtaildocs/js/document-chooser.js' %}"></script>
+
+    <script src="{% static 'wagtailmedia/js/tabs.js' %}"></script>
+    <script src="{% static 'wagtailmedia/js/media-chooser-modal.js' %}"></script>
+    <script src="{% static 'wagtailmedia/js/media-chooser.js' %}"></script>
+
+
+
+    <script src="{% static 'wagtail_webstories_editor/js/story-editor/editor.js' %}"></script>
+    <script src="{% static 'wagtail_webstories_editor/js/common.js' %}"></script>
 
     <script>
         // Set wagtailConfig.ACTIVE_CONTENT_LOCALE if this is a translated page
@@ -68,8 +86,16 @@
 
     <script>
 
-        const serviceWorkerScriptUrl = "{% static 'wagtail_webstories_editor/js/sw.js' %}";
+        const serviceWorkerScriptUrl = "{% static 'wagtail_webstories_editor/js/story-editor/sw.js' %}";
         const elementId = "webstory-editor-container"
+        const apiImagesUrl = "{% url 'wagtailapi:images:listing' %}";
+        const apiMediaUrl = "{% url 'wagtailapi:media:listing' %}";
+
+        window.chooserUrls.mediaAudioChooser = "{% url 'wagtailmedia:chooser_typed' media_type='audio' %}"
+        window.chooserUrls.mediaVideoChooser = "{% url 'wagtailmedia:chooser_typed' media_type='video' %}"
+        window.wagtailImageApiUrl = "{% url 'wagtailapi:images:listing' %}";
+        window.wagtailMediaApiUrl = "{% url 'wagtailapi:media:listing' %}";
+        window.wagtailDocumentApiUrl = "{% url 'wagtailapi:documents:listing' %}";
 
         const storyConfig = {{ object.json_config|safe }};
         const storyHtml = "{{ object.html|escapejs }}";
@@ -82,26 +108,74 @@
         }
 
         const options = {
-            serviceWorkerScriptUrl: serviceWorkerScriptUrl,
+            serviceWorkerScriptUrl,
+            initialEdits: {story},
+            storyId: "{{ object.pk }}",
+        }
+
+        const getMedia = async ({mediaType, searchTerm}) => {
+            let media
+            if (mediaType === "video") {
+                media = await getVideos(apiMediaUrl)
+            } else {
+                media = await getImages(apiImagesUrl)
+            }
+
+            return {
+                data: media.items,
+                headers: {
+                    totalItems: media.meta.totalItems,
+                    totalPages: media.meta.totalPages,
+                },
+            };
+        };
+
+
+        const editorConfig = {
             saveStoryById: (story) => {
                 const storyData = WebStories.getStorySaveData(story)
-
                 const {content, ...rest} = storyData
                 const {title: {raw: storyTitle}} = rest
 
-                $("#id_title").val(storyTitle)
+
+                if (storyTitle) {
+                    $("#id_title").val(storyTitle)
+                } else {
+                    rest.title.raw = $("#id_title").val()
+                }
+
 
                 $("#id_config").val(JSON.stringify(rest))
                 $("#id_html").val(content)
-
             },
-            initialEdits: {story},
-            storyId: "{{ object.pk }}"
+            getMedia: getMedia,
+            allowedMimeTypes: {
+                image: [
+                    'image/webp',
+                    'image/png',
+                    'image/jpeg',
+                    'image/gif',
+                    'image/svg+xml',
+                ],
+                audio: [
+                    'audio/mpeg',
+                    'audio/aac',
+                    'audio/wav',
+                    'audio/ogg',
+                ],
+                video: [
+                    'video/mp4', 'video/webm'
+                ],
+                vector: ['image/svg+xml'],
+                caption: ['text/vtt'],
+            }
         }
 
+        const initialEdits = {story}
+
         $(document).ready(() => {
-            // initialize web story
-            WebStories.initEditor(elementId, options)
+            // initialize editor
+            WebStories.initializeStoryEditor(elementId, editorConfig, initialEdits, options)
         })
 
 

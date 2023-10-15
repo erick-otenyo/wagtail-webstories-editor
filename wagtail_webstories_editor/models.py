@@ -8,7 +8,7 @@ from wagtail.models import DraftStateMixin, LockableMixin, RevisionMixin, Workfl
 
 
 class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, models.Model):
-    title = models.CharField(max_length=255, verbose_name=_("Title"))
+    title = models.CharField(max_length=255, default="Untitled", verbose_name=_("Title"))
     config = models.JSONField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
 
