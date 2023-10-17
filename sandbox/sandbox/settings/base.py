@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
+
 ]
 
 MIDDLEWARE = [
@@ -171,3 +173,5 @@ WAGTAILSEARCH_BACKENDS = {
 WAGTAILADMIN_BASE_URL = "http://example.com"
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+WAGTAIL_WEBSTORIES_EDITOR_LISTING_PAGE_MODEL = "home.WebStoryListPage"

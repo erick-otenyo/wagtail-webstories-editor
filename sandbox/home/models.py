@@ -1,8 +1,9 @@
 from django.db import models
 from wagtail.admin.panels import FieldPanel
-
 from wagtail.models import Page
 from wagtailmedia.edit_handlers import MediaChooserPanel
+
+from wagtail_webstories_editor.models import AbstractWebStoryListPage
 
 
 class HomePage(Page):
@@ -26,4 +27,12 @@ class HomePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel("image"),
         MediaChooserPanel("featured_media"),
+    ]
+
+
+class WebStoryListPage(AbstractWebStoryListPage):
+    description = models.TextField(blank=True, null=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel("description")
     ]

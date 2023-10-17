@@ -1,0 +1,146 @@
+{% extends "wagtailadmin/generic/index.html" %}
+{% load i18n wagtailadmin_tags static %}
+{% block titletag %}{% blocktrans trimmed with snippet_type_name_plural=model_opts.verbose_name_plural|capfirst %}
+    Snippets {{ snippet_type_name_plural }}{% endblocktrans %}{% endblock %}
+{% block bodyclass %}webstory-dashboard{% endblock %}
+
+{% block extra_css %}
+    <style>
+
+        .messages {
+            z-index: 999 !important;
+        }
+
+        .webstory-dashboard .content-wrapper .content {
+            height: 100%;
+            padding: 0 !important;
+        }
+
+        .webstory-dashboard .footer .actions {
+            width: 250px !important;
+        }
+
+        div[class^='constants__PopupContainer'] {
+            z-index: 9999 !important;
+        }
+
+        .webstory-dashboard input[type=search] {
+            height: 100%;
+            width: 100%;
+            background-color: transparent;
+            outline: none;
+            cursor: pointer;
+            font-family: "Google Sans", sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            letter-spacing: 0;
+            line-height: 20px;
+            text-decoration: none;
+            color: rgb(228, 229, 230);
+            border: 1px solid rgb(57, 61, 63);
+            padding: 8px 20px 8px 40px;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div id="webstory-dashboard-container" style="flex: 1;height: 100%"></div>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'wagtail_webstories_editor/js/story-editor/dashboard.js' %}"></script>
+    <script></script>
+    <script>
+        const elementId = "webstory-dashboard-container"
+        const webstoriesListUrl = "{% url 'web_stories_list' %}";
+
+        const createStoryUrl = "{% if can_add_snippet %}{% url view.add_url_name %}{% endif %}"
+        const updateWebStoryUrl = "{% url 'web_stories_update' story_id=0 %}";
+        const duplicateWebStoryUrl = "{% url 'web_stories_duplicate' story_id=0 %}";
+
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const updateWebStory = (storyId, payload) => {
+            let props = {
+                method: "POST",
+                body: JSON.stringify(payload),
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                mode: "same-origin",
+            }
+
+            const storyUpdateUrl = updateWebStoryUrl.replace("/0", `/${storyId}`)
+
+            return fetch(storyUpdateUrl, props)
+                .then(res => res.json())
+                .catch(error => {
+                    throw error;
+                });
+        }
+
+        const duplicateWebStory = (storyId, payload = {}) => {
+            let props = {
+                method: "POST",
+                body: JSON.stringify(payload),
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken"),
+                    "Content-Type": "application/json;charset=UTF-8"
+                },
+                mode: "same-origin",
+            }
+
+            const storyDuplicateUrl = duplicateWebStoryUrl.replace("/0", `/${storyId}`)
+
+            return fetch(storyDuplicateUrl, props)
+                .then(res => res.json())
+                .catch(error => {
+                    throw error;
+                });
+        }
+
+        $(document).ready(() => {
+            const dashboardConfig = {
+                canViewDefaultTemplates: false,
+                newStoryURL: createStoryUrl,
+                apiCallbacks: {
+                    fetchStories: (queryParams) => {
+                        return fetch(webstoriesListUrl).then(res => res.json())
+                    },
+                    updateStory: (data) => {
+                        const {id, title} = data
+                        return updateWebStory(id, {title: title.raw})
+                    },
+                    duplicateStory: (story) => {
+                        const {id} = story
+                        return duplicateWebStory(id)
+                    }
+                }
+            }
+
+            // initialize dashboard
+            WebStories.initializeStoryDashboard(elementId, dashboardConfig)
+        })
+
+    </script>
+{% endblock %}

@@ -10,6 +10,7 @@ module.exports = function (env, argv) {
         mode: options.mode,
         entry: {
             editor: path.resolve(__dirname, "./src/editor.js"),
+            dashboard: path.resolve(__dirname, "./src/dashboard.js"),
         },
         resolve: {
             extensions: [".js", ".css", ".scss", ".svg"],
@@ -45,7 +46,7 @@ module.exports = function (env, argv) {
                     test: /\.(svg|png)$/,
                     use: {
                         loader: "url-loader",
-                           options: {},
+                        options: {},
                     },
                 },
             ],

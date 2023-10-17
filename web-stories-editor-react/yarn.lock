@@ -1090,6 +1090,29 @@
     styled-components "^5.3.11"
     uuid "^9.0.0"
 
+"@googleforcreators/dashboard@*":
+  version "0.1.202309041201"
+  resolved "https://registry.yarnpkg.com/@googleforcreators/dashboard/-/dashboard-0.1.202309041201.tgz#6881720243c814da539dfdf2e2c664e568a32528"
+  integrity sha512-Y45f7l7JZfHHWGvNESor7z04BmU0dTp7nEPCdnqmMx4FBZBGMjqvcL4VKUvIWD7Fnbkj6FATyjdbIgMBEkWTjA==
+  dependencies:
+    "@googleforcreators/animation" "*"
+    "@googleforcreators/date" "*"
+    "@googleforcreators/design-system" "*"
+    "@googleforcreators/element-library" "*"
+    "@googleforcreators/i18n" "*"
+    "@googleforcreators/media" "*"
+    "@googleforcreators/migration" "*"
+    "@googleforcreators/patterns" "*"
+    "@googleforcreators/react" "*"
+    "@googleforcreators/templates" "*"
+    "@googleforcreators/tracking" "*"
+    "@googleforcreators/units" "*"
+    flagged "^2.0.8"
+    history "^5.3.0"
+    prop-types "^15.8.1"
+    styled-components "^5.3.11"
+    stylis-plugin-rtl "^1.0.0"
+
 "@googleforcreators/date@*":
   version "0.1.202309041201"
   resolved "https://registry.yarnpkg.com/@googleforcreators/date/-/date-0.1.202309041201.tgz#5aad80cf0ccdb5eec471bc6982c1bcd6def89652"

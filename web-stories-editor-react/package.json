@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@googleforcreators/animation": "*",
+    "@googleforcreators/dashboard": "*",
     "@googleforcreators/design-system": "*",
     "@googleforcreators/element-library": "*",
     "@googleforcreators/elements": "*",
