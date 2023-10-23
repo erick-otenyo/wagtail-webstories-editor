@@ -32,10 +32,10 @@ by providing integrations with the Wagtail Admin, mainly by use of custom snippe
 - Integration with `Wagtail Images` to use the Wagtail image chooser
   and [Wagtail Media](https://github.com/torchbox/wagtailmedia) to use it's `Media Choosers` for `Audio` and `Video`
 - On top of the features provided by the Editor and Dashboard, the package uses most of
-  the  [Snippets Optional Features](https://docs.wagtail.org/en/v5.1.3/topics/snippets/features.html) to bring enable
+  the  [Snippets Optional Features](https://docs.wagtail.org/en/v5.1.3/topics/snippets/features.html) to enable
   the following features:
     - Making WebStories previewable using the wagtail `PreviewableMixin`
-    - Saving revisions for WeStories using `RevisionMixin`
+    - Saving revisions for WeBStories using `RevisionMixin`
     - Saving draft changes for WebStories using `DraftStateMixin`
     - Locking WebStories using `LockableMixin`
     - Enabling workflows for WebStories using `WorkflowMixin`
