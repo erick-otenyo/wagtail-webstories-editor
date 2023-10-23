@@ -68,13 +68,56 @@ INSTALLED_APPS = [
 
     ...
 ]
-
 ```
 
 Run migrations
 
 ```shell
 python manage.py migrate wagtail_webstories_editor
+```
+
+You also need to enable [Wagtail's API](https://docs.wagtail.org/en/stable/advanced_topics/api/v2/configuration.html)
+for images, documents, and media. To do, you can follow the steps below:
+
+- Make sure `wagtail.api.v2` is added to your installed apps
+- Create an `api.py` where you will configure your endpoints to expose .The package adds a few custom functions to the
+  default provided Images, Documents, and Media ViewSet classes to build compatibility with WebStories `apiCallbacks`.
+  You can import them and use them as below:
+
+```python
+# api.py
+from wagtail.api.v2.router import WagtailAPIRouter
+
+from wagtail_webstories_editor.api_viewsets import (CustomImagesAPIViewSet,
+                                                    CustomMediaAPIViewSet,
+                                                    CustomDocumentAPIViewSet)
+
+api_router = WagtailAPIRouter('wagtailapi')
+
+api_router.register_endpoint('images', CustomImagesAPIViewSet)
+api_router.register_endpoint("media", CustomMediaAPIViewSet)
+api_router.register_endpoint('documents', CustomDocumentAPIViewSet)
+
+```
+
+Next, register the URLs so Django can route requests into the API:
+
+```python
+
+# urls.py
+
+from .api import api_router
+
+urlpatterns = [
+    ...
+
+    path('api/v2/', api_router.urls),
+
+    ...
+
+    # Ensure that the api_router line appears above the default Wagtail page serving route
+    re_path(r'^', include(wagtail_urls)),
+]
 ```
 
 If everything went ok, a new `Web Stories` menu item will be to your Wagtail Admin Menu
