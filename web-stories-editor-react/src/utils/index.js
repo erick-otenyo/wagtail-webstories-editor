@@ -25,3 +25,9 @@ export function isBlobURL(url) {
     return url.startsWith('blob');
 }
 
+const idFormatRegex = /^ua-\d+-\d+|g-\w+$/;
+
+export function validateGoogleAnalyticsIdFormat(value = '') {
+    return Boolean(value.toLowerCase().match(idFormatRegex));
+}
+

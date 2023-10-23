@@ -39,6 +39,7 @@ const CreationTool = (props) => {
 
     const {
         apiCallbacks = {},
+        api = {},
         ...rest
     } = editorConfig || {}
 
@@ -49,11 +50,13 @@ const CreationTool = (props) => {
             capabilities: {
                 hasUploadMediaAction: true,
             },
+            api: {...api},
             apiCallbacks: {
                 ...apiCallbacks,
                 updateCurrentUser: () => Promise.resolve({}),
                 getFonts,
             },
+
             MediaUpload,
         };
     }, [storyId]);

@@ -64,7 +64,6 @@ export function getStorySaveData(story) {
         pages,
         fonts,
         autoAdvance,
-        featuredMedia,
         globalStoryStyles,
         defaultPageDuration,
         currentStoryStyles,
@@ -97,18 +96,6 @@ export function getStorySaveData(story) {
         content: content,
         capabilities: {
             hasUploadMediaAction: true,
-        },
-        featuredMedia: {
-            id: 0,
-            height: 0,
-            width: 0,
-            url: '',
-            needsProxy: false,
-            isExternal: false,
-        },
-        author: {
-            id: 1,
-            name: '',
         },
         ...rest
     };

@@ -4,23 +4,68 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
+from modelcluster.fields import ParentalKey
+from modelcluster.models import ClusterableModel
 from wagtail.admin.admin_url_finder import AdminURLFinder
-from wagtail.admin.panels import FieldPanel, PublishingPanel
+from wagtail.admin.panels import FieldPanel, PublishingPanel, InlinePanel
 from wagtail.contrib.routable_page.models import RoutablePageMixin, path
+from wagtail.contrib.settings.models import BaseSiteSetting
 from wagtail.models import (
     DraftStateMixin,
     LockableMixin,
     RevisionMixin,
     WorkflowMixin,
-    PreviewableMixin, Page
+    PreviewableMixin, Page, Orderable
 )
 
 from wagtail_webstories_editor import get_webstories_listing_page_model
 
 
+class WebStoriesSetting(ClusterableModel, BaseSiteSetting):
+    google_analytics_id = models.CharField(max_length=255, blank=True, null=True,
+                                           verbose_name=_("Google Analytics Measurement ID"))
+    using_legacy_analytics = models.BooleanField(default=False)
+    video_cache = models.BooleanField(default=False)
+    auto_advance = models.BooleanField(default=False)
+    default_page_duration = models.IntegerField(default=7, blank=True, null=True)
+
+    panels = [
+        FieldPanel("google_analytics_id"),
+        FieldPanel("using_legacy_analytics"),
+        FieldPanel("video_cache"),
+        FieldPanel("auto_advance"),
+        FieldPanel("default_page_duration"),
+        InlinePanel("publisher_logos", heading=_("Publisher Logos"), label=_("Logo"))
+    ]
+
+    @property
+    def config(self):
+        return {
+            "googleAnalyticsId": self.google_analytics_id,
+            "usingLegacyAnalytics": self.using_legacy_analytics,
+            "videoCache": self.video_cache,
+            "autoAdvance": self.auto_advance,
+            "defaultPageDuration": self.default_page_duration,
+        }
+
+
+class WebStoriesPublisherLogo(Orderable):
+    setting = ParentalKey(WebStoriesSetting, related_name="publisher_logos", on_delete=models.CASCADE)
+    logo = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("Logo")
+    )
+    default = models.BooleanField(default=False)
+
+
 class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, PreviewableMixin, models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=255, default="Untitled", verbose_name=_("Title"))
+    slug = models.CharField(max_length=255, blank=True, null=True, unique=True)
     config = models.JSONField(blank=True, null=True)
     html = models.TextField(blank=True, null=True)
 
@@ -40,6 +85,7 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
 
     panels = [
         FieldPanel("title"),
+        FieldPanel("slug"),
         FieldPanel("config"),
         FieldPanel("html"),
         PublishingPanel(),
@@ -47,6 +93,25 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
 
     def __str__(self):
         return self.title
+
+    def slug_is_available(self, candidate_slug):
+        siblings = WebStory.objects.all()
+
+        if self.pk:
+            siblings = siblings.exclude(pk=self.pk)
+
+        return not siblings.filter(slug=candidate_slug).exists()
+
+    def full_clean(self, *args, **kwargs):
+        candidate_slug = self.slug
+        if candidate_slug:
+            suffix = 1
+            while not self.slug_is_available(candidate_slug):
+                suffix += 1
+                candidate_slug = "%s-%d" % (self.slug, suffix)
+        self.slug = candidate_slug
+
+        super().full_clean(*args, **kwargs)
 
     @property
     def json_config(self):
@@ -62,23 +127,45 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
     def get_preview_context(self, request, preview_mode):
         return {"story": self}
 
-    def get_story_dashboard_config(self, request=None):
+    def get_parent_link(self, request=None):
         WebStoyListPage = get_webstories_listing_page_model()
-        list_page = None
         if WebStoyListPage:
             list_page = WebStoyListPage.objects.live().first()
+            return list_page.get_full_url(request)
+        return None
 
+    def get_link(self, request=None):
+        parent_link = self.get_parent_link(request)
+        if parent_link:
+            suffix = str(self.pk)
+            if self.slug:
+                suffix = self.slug
+            return parent_link + suffix
+
+        return ""
+
+    def get_permalink_template(self, request=None):
+        parent_link = self.get_parent_link(request)
+
+        if parent_link:
+            return parent_link + "%pagename%/"
+
+        return ""
+
+    def get_story_dashboard_config(self, request=None):
         finder = AdminURLFinder()
         edit_url = finder.get_edit_url(self)
+
+        story = self.get_latest_revision_as_object()
 
         if request:
             edit_url = request.build_absolute_uri(edit_url)
 
         story_data = {
-            "id": self.pk,
+            "id": story.pk,
             "title": self.title,
-            "created": self.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
-            "createdGmt": self.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "created": story.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
+            "createdGmt": story.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "status": "publish" if self.live else "draft",
             "bottomTargetAction": edit_url,
             "editStoryLink": edit_url,
@@ -88,14 +175,25 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
             },
         }
 
+        try:
+            if story.config and story.config.get("featuredMedia"):
+                featuredMedia = story.config.get("featuredMedia")
+                if featuredMedia and featuredMedia.get("url"):
+                    story_data.update({"featuredMediaUrl": featuredMedia.get("url")})
+        except Exception:
+            pass
+
         if self.latest_revision:
             story_data.update({
                 "modified": self.latest_revision.created_at.strftime("%Y-%m-%dT%H:%M:%SZ")
             })
 
-        if self.live and list_page:
+        link = self.get_link(request)
+
+        if self.live and link:
             story_data.update({
-                "link": list_page.get_full_url(request) + str(self.pk)
+                "link": link,
+                "previewLink": link
             })
 
         return story_data
@@ -118,19 +216,33 @@ class AbstractWebStoryListPage(RoutablePageMixin, Page):
         list_page_url = self.get_full_url(request=request)
 
         for story in self.live_stories:
-            list_page_sitemap_urls.append({
-                "location": list_page_url + str(story.pk),
+            sitemap_url = {
                 "lastmod": story.last_published_at,
-            })
+            }
+
+            if story.slug:
+                sitemap_url.update({
+                    "location": list_page_url + story.slug
+                })
+            else:
+                sitemap_url.update({
+                    "location": list_page_url + str(story.pk)
+                })
+
+            list_page_sitemap_urls.append(sitemap_url)
 
         return list_page_sitemap_urls
 
-    @path('<int:story_id>/')
+    @path('<str:story_id>/')
     def web_story_page(self, request, story_id):
         """
         View function for web story
         """
-        web_story = get_object_or_404(WebStory, live=True, pk=story_id)
+        try:
+            story_id = int(story_id)
+            web_story = get_object_or_404(WebStory, live=True, pk=story_id)
+        except ValueError:
+            web_story = get_object_or_404(WebStory, live=True, slug=story_id)
 
         return self.render(
             request,

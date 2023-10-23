@@ -23,7 +23,14 @@ import {InterfaceSkeleton} from '@googleforcreators/story-editor';
  * Internal dependencies
  */
 import {Header} from '../header';
+import DocumentPane from '../documentPane';
+import {__} from "@googleforcreators/i18n";
 
 export default function Layout() {
-    return <InterfaceSkeleton header={<Header/>}/>;
+    return <InterfaceSkeleton header={<Header/>} sidebarTabs={{
+        document: {
+            title: __('Document', 'web-stories'),
+            Pane: DocumentPane,
+        }
+    }}/>;
 }

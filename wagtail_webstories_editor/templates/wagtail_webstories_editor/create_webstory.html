@@ -111,6 +111,7 @@
         const serviceWorkerScriptUrl = "{% static 'wagtail_webstories_editor/js/story-editor/sw.js' %}";
         const elementId = "webstory-editor-container"
         const apiImagesUrl = "{% url 'wagtailapi:images:listing' %}";
+        const apiMediaUrl = "{% url 'wagtailapi:media:listing' %}";
 
         window.chooserUrls.mediaAudioChooser = "{% url 'wagtailmedia:chooser_typed' media_type='audio' %}"
         window.chooserUrls.mediaVideoChooser = "{% url 'wagtailmedia:chooser_typed' media_type='video' %}"
@@ -118,18 +119,26 @@
         window.wagtailMediaApiUrl = "{% url 'wagtailapi:media:listing' %}";
         window.wagtailDocumentApiUrl = "{% url 'wagtailapi:documents:listing' %}";
 
+        const savedConfig = {{ editorConfig|safe }};
+
+
         const getMedia = async ({mediaType, searchTerm}) => {
-            let images = await getImages(apiImagesUrl)
+            let media
+            if (mediaType === "video") {
+                media = await getVideos(apiMediaUrl)
+            } else {
+                media = await getImages(apiImagesUrl)
+            }
+
 
             return {
-                data: images.items,
+                data: media.items,
                 headers: {
-                    totalItems: images.meta.totalItems,
-                    totalPages: images.meta.totalPages,
+                    totalItems: media.meta.totalItems,
+                    totalPages: media.meta.totalPages,
                 },
             };
         };
-
         const onSaveStory = (story) => {
             const storyData = WebStories.getStorySaveData(story)
             const {content, ...rest} = storyData
@@ -147,6 +156,7 @@
         }
 
         const editorConfig = {
+            ...savedConfig,
             apiCallbacks: {
                 saveStoryById: (story) => {
                     onSaveStory(story)

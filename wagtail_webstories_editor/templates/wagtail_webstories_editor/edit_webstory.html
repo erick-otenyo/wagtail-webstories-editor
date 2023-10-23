@@ -73,7 +73,8 @@
             padding: 8px 20px 8px 40px;
             border-radius: 4px;
             box-sizing: border-box;
-        }¬
+        }
+
 
     </style>
 
@@ -120,15 +121,54 @@
         window.wagtailMediaApiUrl = "{% url 'wagtailapi:media:listing' %}";
         window.wagtailDocumentApiUrl = "{% url 'wagtailapi:documents:listing' %}";
 
+        const publisherLogosUrl = "{% url 'web_stories_publisher_logos' %}";
+
         const storyConfig = {{ object.json_config|safe }};
         const storyHtml = "{{ object.html|escapejs }}";
+        const permalinkTemplate = "{{ permalink_template }}"
+        const storyLink = "{{ story_link }}";
+        const isLive = {{ object.live|yesno:"true,false" }};
+        const slug = "{{ object.slug|default_if_none:""}}";
 
-        storyConfig.storyId = "{{ object.pk }}"
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const storyId = "{{ object.pk }}";
+
+
+        storyConfig.storyId = storyId
 
         const story = {
             ...storyConfig,
-            content: storyHtml
+            content: storyHtml,
         }
+
+        if (slug) {
+            story.slug = slug
+        }
+
+        if (storyLink && isLive) {
+            story.link = storyLink
+        }
+
+        if (permalinkTemplate) {
+            story.permalinkTemplate = permalinkTemplate
+        }
+
 
         const options = {
             serviceWorkerScriptUrl,
@@ -156,12 +196,16 @@
         const onSaveStory = (story) => {
             const storyData = WebStories.getStorySaveData(story)
             const {content, ...rest} = storyData
-            const {title: {raw: storyTitle}} = rest
+            const {title: {raw: storyTitle}, slug} = rest
 
             if (storyTitle) {
                 $("#id_title").val(storyTitle)
             } else {
                 rest.title.raw = $("#id_title").val()
+            }
+
+            if (slug && slug !== storyId) {
+                $("#id_slug").val(slug)
             }
 
             $("#id_config").val(JSON.stringify(rest))
@@ -175,6 +219,28 @@
                     onSaveStory(story)
                 },
                 getMedia: getMedia,
+                getPublisherLogos: (logosPath) => {
+                    return fetch(logosPath).then((res => res.json()))
+                },
+                addPublisherLogo: (logosPath, logoId) => {
+                    const payload = {
+                        id: logoId
+                    }
+
+                    let props = {
+                        method: "POST",
+                        body: JSON.stringify(payload),
+                        headers: {
+                            "X-CSRFToken": getCookie("csrftoken"),
+                            "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        mode: "same-origin",
+                    }
+                    return fetch(logosPath, props).then(res => res.json())
+                }
+            },
+            api: {
+                publisherLogos: publisherLogosUrl
             },
             allowedMimeTypes: {
                 image: [

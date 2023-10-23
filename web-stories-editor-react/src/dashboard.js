@@ -19,6 +19,9 @@
 import {render} from '@googleforcreators/react';
 import styled from 'styled-components';
 import {Dashboard, InterfaceSkeleton} from "@googleforcreators/dashboard";
+import {EditorSettings, EditorSettingsProvider} from './components/editorSettings';
+import {EDITOR_SETTINGS_ROUTE} from "./constants";
+import {setAppElement} from "@googleforcreators/design-system";
 
 
 const DashboardContainer = styled.div`
@@ -29,18 +32,31 @@ const DashboardTool = ({config}) => {
     return (
         <DashboardContainer>
             <Dashboard config={config}>
-                <InterfaceSkeleton/>
+                <EditorSettingsProvider>
+                    <InterfaceSkeleton additionalRoutes={[
+                        {
+                            path: EDITOR_SETTINGS_ROUTE,
+                            component: <EditorSettings/>,
+                        },
+                    ]}/>
+                </EditorSettingsProvider>
+
             </Dashboard>
         </DashboardContainer>
     );
 };
 
 export function initializeStoryDashboard(elementId, dashboardConfig) {
+
+    const appElement = document.getElementById(elementId);
+
+    // see http://reactcommunity.org/react-modal/accessibility/
+    setAppElement(appElement);
+
     // render
     render(
         <DashboardTool config={dashboardConfig}/>,
-        document.getElementById(elementId
-        )
+        appElement
     );
 }
 

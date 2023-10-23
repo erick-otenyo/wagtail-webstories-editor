@@ -62,6 +62,8 @@
         const updateWebStoryUrl = "{% url 'web_stories_update' story_id=0 %}";
         const duplicateWebStoryUrl = "{% url 'web_stories_duplicate' story_id=0 %}";
 
+        const publisherLogosUrl = "{% url 'web_stories_publisher_logos' %}";
+        const settingsUrl = "{% url 'web_stories_settings' %}";
 
         function getCookie(name) {
             let cookieValue = null;
@@ -122,7 +124,14 @@
         $(document).ready(() => {
             const dashboardConfig = {
                 canViewDefaultTemplates: false,
+                capabilities: {
+                    canManageSettings: true,
+                },
                 newStoryURL: createStoryUrl,
+                api: {
+                    publisherLogos: publisherLogosUrl,
+                    settings: settingsUrl
+                },
                 apiCallbacks: {
                     fetchStories: (queryParams) => {
                         return fetch(webstoriesListUrl).then(res => res.json())
@@ -134,8 +143,94 @@
                     duplicateStory: (story) => {
                         const {id} = story
                         return duplicateWebStory(id)
+                    },
+                    fetchSettings: () => {
+                        return fetch(settingsUrl).then(res => res.json())
+                    },
+                    updateSettings: (apiPath, queryParams) => {
+
+                        const {
+                            googleAnalyticsId,
+                            usingLegacyAnalytics,
+                            videoCache,
+
+                            autoAdvance,
+                            defaultPageDuration,
+                        } = queryParams;
+
+                        const payload = {}
+
+
+                        if (googleAnalyticsId !== undefined) {
+                            payload.google_analytics_id = googleAnalyticsId;
+                        }
+
+                        if (usingLegacyAnalytics !== undefined) {
+                            payload.using_legacy_analytics = usingLegacyAnalytics;
+                        }
+
+
+                        if (videoCache !== undefined) {
+                            payload.video_cache = Boolean(videoCache);
+                        }
+
+
+                        if (autoAdvance !== undefined) {
+                            payload.auto_advance = Boolean(autoAdvance);
+                        }
+
+                        if (defaultPageDuration !== undefined) {
+                            payload.default_page_duration = defaultPageDuration;
+                        }
+
+                        let props = {
+                            method: "POST",
+                            body: JSON.stringify(payload),
+                            headers: {
+                                "X-CSRFToken": getCookie("csrftoken"),
+                                "Content-Type": "application/json;charset=UTF-8"
+                            },
+                            mode: "same-origin",
+                        }
+
+                        return fetch(apiPath, props)
+                            .then(res => res.json())
+                            .catch(error => {
+                                throw error;
+                            });
+                    },
+
+                    fetchPublisherLogos: (logosPath) => {
+                        return fetch(logosPath).then((res => res.json()))
+                    },
+                    setPublisherLogoAsDefault: (logosPath, logoId) => {
+                        let props = {
+                            method: "POST",
+                            body: JSON.stringify({default_logo_id: logoId}),
+                            headers: {
+                                "X-CSRFToken": getCookie("csrftoken"),
+                                "Content-Type": "application/json;charset=UTF-8"
+                            },
+                            mode: "same-origin",
+                        }
+
+
+                        return fetch(logosPath, props)
+                            .then(res => res.json())
+                            .catch(error => {
+                                throw error;
+                            });
+
+                    },
+                    fetchCustomFonts: () => {
+                    },
+                },
+                leftRailSecondaryNavigation: [
+                    {
+                        value: "/editor-settings",
+                        label: "Settings",
                     }
-                }
+                ],
             }
 
             // initialize dashboard
