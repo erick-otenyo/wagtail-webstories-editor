@@ -94,6 +94,26 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
     def __str__(self):
         return self.title
 
+    @property
+    def poster_image_url(self):
+        try:
+            featured_media = self.config.get("featuredMedia")
+            if featured_media and featured_media.get("url"):
+                return featured_media.get("url")
+
+            pages = self.config.get("storyData", {}).get("pages")
+
+            for page in pages:
+                elements = page.get("elements")
+                for element in elements:
+                    if element.get("type") == "image":
+                        return element.get("resource").get("src")
+
+        except Exception:
+            pass
+
+        return None
+
     def slug_is_available(self, candidate_slug):
         siblings = WebStory.objects.all()
 
@@ -161,11 +181,13 @@ class WebStory(WorkflowMixin, DraftStateMixin, LockableMixin, RevisionMixin, Pre
         if request:
             edit_url = request.build_absolute_uri(edit_url)
 
+        created_at = story.last_published_at or story.created_at
+
         story_data = {
             "id": story.pk,
             "title": self.title,
-            "created": story.created_at.strftime("%Y-%m-%dT%H:%M:%S"),
-            "createdGmt": story.created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "created": created_at.strftime("%Y-%m-%dT%H:%M:%S"),
+            "createdGmt": created_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "status": "publish" if self.live else "draft",
             "bottomTargetAction": edit_url,
             "editStoryLink": edit_url,
@@ -208,7 +230,7 @@ class AbstractWebStoryListPage(RoutablePageMixin, Page):
 
     @property
     def live_stories(self):
-        live_webstories_stories = WebStory.objects.filter(live=True)
+        live_webstories_stories = WebStory.objects.filter(live=True).order_by("-last_published_at")
         return live_webstories_stories
 
     def get_sitemap_urls(self, request=None):
@@ -217,7 +239,7 @@ class AbstractWebStoryListPage(RoutablePageMixin, Page):
 
         for story in self.live_stories:
             sitemap_url = {
-                "lastmod": story.last_published_at,
+                "lastmod": story.last_published_at
             }
 
             if story.slug:

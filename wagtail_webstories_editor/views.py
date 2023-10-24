@@ -9,7 +9,7 @@ from wagtail_webstories_editor.models import WebStory, WebStoriesSetting, WebSto
 
 
 def web_stories_list(request):
-    web_stories = WebStory.objects.all()
+    web_stories = WebStory.objects.all().order_by("-last_published_at")
     paginator = Paginator(web_stories, 20)
 
     stories_data = {

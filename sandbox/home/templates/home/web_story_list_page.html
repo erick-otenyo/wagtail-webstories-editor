@@ -1,10 +1,80 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load static wagtailiconchooser_tags i18n humanize %}
 
-</body>
-</html>
+{% block body_class %}webstory-list{% endblock %}
+
+{% block content %}
+    <main style="margin-top: 100px">
+
+        <style>
+
+            .card {
+                height: 100%;
+            }
+
+            .webstories-icon {
+                height: 45px;
+                width: 45px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                background-color: rgba(0, 0, 0, .3);
+                border-radius: 50%;
+                position: absolute;
+                z-index: 999;
+                right: 12px;
+                top: 12px;
+            }
+
+            .webstories-icon svg {
+                height: 25px;
+                width: 25px;
+                fill: #fff;
+            }
+
+            .story-card:hover {
+                box-shadow: rgba(45, 45, 45, 0.05) 0px 2px 2px, rgba(49, 49, 49, 0.05) 0px 4px 4px, rgba(42, 42, 42, 0.05) 0px 8px 8px, rgba(32, 32, 32, 0.05) 0px 16px 16px, rgba(49, 49, 49, 0.05) 0px 22px 22px, rgba(35, 35, 35, 0.02) 0px 64px 64px;
+                transform: translate(0, -4px);
+            }
+
+            .story-poster {
+                object-fit: cover;
+            }
+
+        </style>
+        <section class=webstory-list>
+            <div class="container">
+                <h2 style="margin: 20px 0;font-size: 24px;font-weight: 500">{{ page.title }}</h2>
+                <div class="columns is-multiline">
+                    {% for story in page.live_stories %}
+                        <div class="column is-one-quarter-widescreen is-half-tablet is-full-mobile">
+                            <a href="{{ story.get_link }}">
+                                <div class="card story-card">
+                                    <div class="card-image" style="position: relative">
+                                        <div class="webstories-icon" style="">
+                                            {% svg_icon name="webstories" %}
+                                        </div>
+                                        <figure class="image is-4by3">
+                                            <img class="story-poster" src="{{ story.poster_image_url }}"
+                                                 alt="{{ story.title }}">
+                                        </figure>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="content">
+                                            <div>
+                                                {{ story.title }}
+                                            </div>
+                                            <div style="font-size: 13px;color: #7b7b7b;padding: 10px 0">
+                                                <time datetime="2016-1-1">{{ story.last_published_at|naturaltime }}</time>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+    </main>
+{% endblock content %}

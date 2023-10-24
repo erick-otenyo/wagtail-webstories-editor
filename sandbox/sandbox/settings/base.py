@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "django_filters",
 
     "rest_framework",
+    "wagtailiconchooser",
 
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -56,6 +57,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sitemaps",
+    'django.contrib.humanize',
 
 ]
 
