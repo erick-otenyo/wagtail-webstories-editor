@@ -37,6 +37,7 @@ typing_extensions==4.8.0
 urllib3==2.0.6
 wagtail==5.1.2
 wagtail-icon-chooser==0.0.5
+wagtail-webstories-editor
 wagtailmedia==0.14.4
 webencodings==0.5.1
 Willow==1.6.2
