@@ -4,12 +4,8 @@
     {{ snippet_type_name }} - {{ object }}{% endblocktrans %}{% endblock %}
 {% block bodyclass %}webstory-editor {% if locked_for_user %}content-locked{% endif %}{% endblock %}
 {% block content %}
-
+    {% include 'wagtailadmin/shared/headers/slim_header.html' %}
     <div style="display: flex;flex-direction: column;height: 100%">
-        <div class="w-sticky w-top-0 w-z-header">
-            {% include 'wagtailsnippets/snippets/headers/edit_header.html' %}
-            {% include "wagtail_webstories_editor/edit_side_panels.html" %}
-        </div>
         <div id="webstory-editor-container" style="flex: 1;height: 100%"></div>
     </div>
     <form id="webstory-form" action="{{ action_url }}" method="POST" novalidate{% if form.is_multipart %}
