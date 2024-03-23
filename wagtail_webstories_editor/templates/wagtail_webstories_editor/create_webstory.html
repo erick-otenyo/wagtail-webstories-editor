@@ -4,10 +4,8 @@
 {% endblocktrans %}{% endblock %}
 {% block bodyclass %}webstory-editor{% endblock %}
 {% block content %}
+    {% include 'wagtailadmin/shared/headers/slim_header.html' %}
     <div style="display: flex;flex-direction: column;height: 100%">
-        <div class="w-sticky w-top-0 w-z-header">
-            {% include 'wagtailsnippets/snippets/headers/create_header.html' %}
-        </div>
         <div id="webstory-editor-container" style="flex: 1;height: 100%"></div>
     </div>
 
