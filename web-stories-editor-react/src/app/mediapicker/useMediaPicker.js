@@ -24,7 +24,7 @@ import {getVideoLength, hasVideoGotAudio, preloadVideo, seekVideo} from '@google
 
 function showVideoModal(onSelect) {
     window.ModalWorkflow({
-        url: window.chooserUrls.mediaVideoChooser,
+        url: window.mediaVideoChooserUrl,
         onload: MEDIA_CHOOSER_MODAL_ONLOAD_HANDLERS,
         responses: {
             mediaChosen: async function (videoData) {
@@ -69,7 +69,7 @@ function showVideoModal(onSelect) {
 
 function showAudioModal(onSelect) {
     window.ModalWorkflow({
-        url: window.chooserUrls.mediaAudioChooser,
+        url: window.mediaAudioChooserUrl,
         onload: MEDIA_CHOOSER_MODAL_ONLOAD_HANDLERS,
         responses: {
             mediaChosen: async function (audioData) {
@@ -103,7 +103,7 @@ function showAudioModal(onSelect) {
 }
 
 function showCaptionModal(onSelect) {
-    const documentModal = new window.DocumentChooserModal(window.chooserUrls.documentChooser)
+    const documentModal = new window.DocumentChooserModal(window.documentChooserUrl)
     documentModal.open({}, async (documentData) => {
         const {id} = documentData
         const docSrc = window.wagtailDocumentApiUrl.replace(/\/$/, "") + `/${id}`
@@ -131,7 +131,7 @@ function showCaptionModal(onSelect) {
 }
 
 function showImageModal(onSelect) {
-    const imageModal = new window.ImageChooserModal(window.chooserUrls.imageChooser)
+    const imageModal = new window.ImageChooserModal(window.imageChooserUrl)
     imageModal.open({}, async (imageData) => {
         const {id} = imageData
         const imageSrc = window.wagtailImageApiUrl.replace(/\/$/, "") + `/${id}`

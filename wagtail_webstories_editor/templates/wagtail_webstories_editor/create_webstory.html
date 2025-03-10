@@ -111,11 +111,14 @@
         const apiImagesUrl = "{% url 'wagtailapi:images:listing' %}";
         const apiMediaUrl = "{% url 'wagtailapi:media:listing' %}";
 
-        window.chooserUrls.mediaAudioChooser = "{% url 'wagtailmedia:chooser_typed' media_type='audio' %}"
-        window.chooserUrls.mediaVideoChooser = "{% url 'wagtailmedia:chooser_typed' media_type='video' %}"
+        window.mediaAudioChooserUrl = "{% url 'wagtailmedia:chooser_typed' media_type='audio' %}"
+        window.mediaVideoChooserUrl = "{% url 'wagtailmedia:chooser_typed' media_type='video' %}"
+        window.imageChooserUrl = "{{ imageChooserUrl }}";
+        window.documentChooserUrl = "{{ documentChooserUrl }}";
         window.wagtailImageApiUrl = "{% url 'wagtailapi:images:listing' %}";
         window.wagtailMediaApiUrl = "{% url 'wagtailapi:media:listing' %}";
         window.wagtailDocumentApiUrl = "{% url 'wagtailapi:documents:listing' %}";
+
 
         const savedConfig = {{ editorConfig|safe }};
 

@@ -58,7 +58,7 @@
         const elementId = "webstory-dashboard-container"
         const webstoriesListUrl = "{% url 'web_stories_list' %}";
 
-        const createStoryUrl = "{% if can_add_snippet %}{% url view.add_url_name %}{% endif %}"
+        const createStoryUrl = "{% if can_add %}{% url view.add_url_name %}{% endif %}"
         const updateWebStoryUrl = "{% url 'web_stories_update' story_id=0 %}";
         const duplicateWebStoryUrl = "{% url 'web_stories_duplicate' story_id=0 %}";
 
